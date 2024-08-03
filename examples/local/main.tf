@@ -1,5 +1,5 @@
 module "kubeconfig" {
-  source = "patrikkj/kubeconfig"
+  source = "patrikkj/kubeconfig/k8s"
   path   = "~/.kube/config"
   write  = true
 

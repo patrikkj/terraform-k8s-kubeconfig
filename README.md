@@ -57,7 +57,7 @@ locals {
 }
 
 module "kubeconfig" {
-  source = "patrikkj/kubeconfig"
+  source = "patrikkj/kubeconfig/k8s"
   write  = false
 
   current-context = local.cluster_name
