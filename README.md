@@ -9,11 +9,13 @@ This module does not depend on any external providers.
 
 ## Usage
 
+### Example 1 - Local usage
+
 Add a set of new cluster credentials to your local `~/.kube/config` file using `patch` and `write=true`:
 
 ```hcl
 module "kubeconfig" {
-  source = "patrikkj/kubeconfig"
+  source = "patrikkj/kubeconfig/k8s"
   path   = "~/.kube/config"
   write  = true
 
@@ -41,9 +43,9 @@ module "kubeconfig" {
 }
 ```
 
-Create a kubeconfig file on a remote resource (for example when adding a worker node to a `k3s` cluster), using the cluster name as the context and user names:
+### Example 2 - Remote usage
 
-Note that wrapping variable names in parentheses (e.g. `(local.cluster_name) = {...}`) is required when used as keys in a map/object.
+Create/replace a kubeconfig file on a remote resource, e.g. when adding a worker node to a `k3s` cluster.
 
 ```hcl
 locals {
@@ -95,3 +97,5 @@ resource "null_resource" "write_kubeconfig" {
   }
 }
 ```
+
+Note that wrapping variable references in parentheses (e.g. `(local.cluster_name) = {...}`) is required when used as keys in maps/objects.
