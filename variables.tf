@@ -21,17 +21,17 @@ variable "current-context" {
 }
 
 variable "preferences" {
-  type        = object
+  type        = any
   default     = null
   description = "If set, updates the preferences field."
 }
 
 variable "patch" {
   type = object({
-    clusters   = optional(any)
-    contexts   = optional(any)
-    users      = optional(any)
-    extensions = optional(any)
+    clusters   = optional(map(any))
+    contexts   = optional(map(any))
+    users      = optional(map(any))
+    extensions = optional(map(any))
   })
   default     = {}
   description = "Adds or replaces the specified entries based on the `name` field."
@@ -39,10 +39,10 @@ variable "patch" {
 
 variable "replace" {
   type = object({
-    clusters   = optional(any)
-    contexts   = optional(any)
-    users      = optional(any)
-    extensions = optional(any)
+    clusters   = optional(map(any))
+    contexts   = optional(map(any))
+    users      = optional(map(any))
+    extensions = optional(map(any))
   })
   default     = {}
   description = "Replaces all entries under the specified block in the config."

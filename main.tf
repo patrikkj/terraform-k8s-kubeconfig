@@ -11,10 +11,10 @@ locals {
   patched_extensions = merge(local.in_extensions, coalesce(var.patch.extensions, {}))
   patched_users      = merge(local.in_users, coalesce(var.patch.users, {}))
 
-  out_clusters   = var.replace.clusters != null ? coalesce(var.replace.clusters, {}) : local.patched_clusters
-  out_contexts   = var.replace.contexts != null ? coalesce(var.replace.contexts, {}) : local.patched_contexts
-  out_extensions = var.replace.extensions != null ? coalesce(var.replace.extensions, {}) : local.patched_extensions
-  out_users      = var.replace.users != null ? coalesce(var.replace.users, {}) : local.patched_users
+  out_clusters   = coalesce(var.replace.clusters, local.patched_clusters)
+  out_contexts   = coalesce(var.replace.contexts, local.patched_contexts)
+  out_extensions = coalesce(var.replace.extensions, local.patched_extensions)
+  out_users      = coalesce(var.replace.users, local.patched_users)
 
   // Spec: https://kubernetes.io/docs/reference/config-api/kubeconfig.v1
   output = {
