@@ -1,2 +1,97 @@
-# terraform-kubernetes-kubeconfig
-Terraform module that generates or patches Kubeconfig files.
+# Kubeconfig Module
+
+The purpose of this module is to render/write kubeconfig files locally or to a remote resource by _patching_ or _replacing_ the existing kubeconfig, if present. If `path` does not point to a valid kubeconfig file, a new config is created.
+
+All fields present in the `kubeconfig.v1` spec are supported:
+https://kubernetes.io/docs/reference/config-api/kubeconfig.v1
+
+This module does not depend on any external providers.
+
+## Usage
+
+Add a set of new cluster credentials to your local `~/.kube/config` file using `patch` and `write=true`:
+
+```hcl
+module "kubeconfig" {
+  source = "patrikkj/kubeconfig"
+  path   = "~/.kube/config"
+  write  = true
+
+  current-context = "my-cluster-name"
+  patch = {
+    clusters = {
+      "my-cluster-name" = {
+        certificate-authority-data = base64encode("...")
+        server                     = "https://0.0.0.0:6443"
+      }
+    }
+    contexts = {
+      "my-context-name" = {
+        cluster = "my-cluster-name"
+        user    = "my-user-name"
+      }
+    }
+    users = {
+      "my-user-name" = {
+        client-certificate-data = base64encode("...")
+        client-key-data         = base64encode("...")
+      }
+    }
+  }
+}
+```
+
+Create a kubeconfig file on a remote resource (for example when adding a worker node to a `k3s` cluster), using the cluster name as the context and user names:
+
+Note that wrapping variable names in parentheses (e.g. `(local.cluster_name) = {...}`) is required when used as keys in a map/object.
+
+```hcl
+locals {
+  cluster_name           = "my-cluster"
+  endpoint               = "192.168.10.101"
+  cluster_ca_certificate = base64encode("...")
+  client_certificate     = base64encode("...")
+  client_key             = base64encode("...")
+}
+
+module "kubeconfig" {
+  source = "patrikkj/kubeconfig"
+  write  = false
+
+  current-context = local.cluster_name
+  replace = {
+    clusters = {
+      (local.cluster_name) = {
+        certificate-authority-data = base64encode(local.cluster_ca_certificate)
+        server                     = "https://${local.endpoint}:6443"
+      }
+    }
+    contexts = {
+      (local.cluster_name) = {
+        cluster = local.cluster_name
+        user    = local.cluster_name
+      }
+    }
+    users = {
+      (local.cluster_name) = {
+        client-certificate-data = base64encode(local.client_certificate)
+        client-key-data         = base64encode(local.client_key)
+      }
+    }
+  }
+}
+
+resource "null_resource" "write_kubeconfig" {
+  connection {
+    type     = "ssh"
+    host     = local.endpoint
+    user     = "..."
+    password = "..."
+  }
+
+  provisioner "file" {
+    content     = yamlencode(module.kubeconfig.output)
+    destination = "/etc/rancher/k3s/k3s.yaml"
+  }
+}
+```
